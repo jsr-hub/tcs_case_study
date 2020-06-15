@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 13 22:30:43 2020
+
+@author: Sanjay Raju J
+"""
 from flask import Flask, render_template, request, redirect
 from flask_mysqldb import MySQL
 import yaml
@@ -13,7 +19,7 @@ app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
 z=0
-
+account=None
 duser=None
 user=None
 @app.route('/', methods=['GET', 'POST'])
@@ -197,6 +203,107 @@ def customerstatus():
     if resultValue > 0:
         userDetails = cur.fetchall()
         return render_template('05 Customer Status.html',userDetails=userDetails)
+
+@app.route('/createacct',methods = ['POST', 'GET'])
+def createacctpage():
+    if request.method == 'POST':
+        userDetails = dict(request.form)
+        print(userDetails)
+        cur = mysql.connection.cursor()
+        Customer_id= userDetails['custid']
+        z=cur.execute("select * from customer where ws_cust_id=%s",[Customer_id])
+        if z!=0:
+            Actype = userDetails['acttype']
+            if(Actype=='Current Account'):
+                AccountType='c'
+            elif(Actype=='Savings Account'):
+                AccountType='s'
+            #print(AccountType)
+            DepAmount=userDetails['amount']
+            cur = mysql.connection.cursor()
+          
+            print("s")
+            cur.execute("insert into Account (ws_cust_id,ws_acct_type,ws_acct_balance) values(%s,%s,%s)",(Customer_id,AccountType,DepAmount))
+            mysql.connection.commit()
+            dataval=cur.execute("select * from Account where ws_cust_id=%s",[Customer_id])
+            if dataval>0:
+                print("MOER THAN WON")
+                singledet=cur.fetchone()
+                print(singledet[1])
+                Status="Active"
+                Message="Account Created Successfully"
+                cur.execute("insert into AccountStatus (ws_cust_id,ws_acct_id,ws_acct_type,Status,Message) values(%s,%s,%s,%s,%s)",(Customer_id,singledet[1],AccountType,Status,Message))
+                mysql.connection.commit()
+            cur.close()
+            return "SUCCESS:"
+        else:
+            return "no customer"
+        
+    #return redirect(url_for('create_table'))"""
+    return render_template('06 Create Account.html')
+    
+
+@app.route('/deleteacctpage',methods = ['POST', 'GET'])
+def deleteacctpage():
+    if request.method == 'POST':
+        userDetails = request.form
+        selecttype=userDetails['confirmtype']
+        selectedact=int(userDetails['selectact'])
+        if(selecttype=='Current'):
+            selecttype='c'
+        elif(selecttype=='Saving'):
+            selecttype='s'
+        global account
+        cur = mysql.connection.cursor()
+        resultValue=cur.execute("select * from Account where ws_acct_id=%s",[selectedact])
+        if resultValue > 0:
+            userDetails = cur.fetchone()
+            if selecttype in userDetails:   
+                newstatus="Inactive"
+                Message="Account Deleted Successfully"
+                cur.execute("Delete from Account where ws_acct_id=%s and ws_acct_type=%s",[selectedact,selecttype])
+                mysql.connection.commit()
+                cur.execute("update AccountStatus set Status=%s,Message=%s where ws_acct_id=%s and ws_acct_type=%s",[newstatus,Message,selectedact,selecttype])
+                mysql.connection.commit()
+                return "Deleted:"
+        else:
+            return "No such Account"
+        cur.close()
+    print("HELLOWORLD")
+    global account
+    return render_template('07 Delete Account.html',actid=account)
+
+@app.route('/accountsearch/<int:check>',methods=["GET","POST"])
+def searchacc(check):
+    if request.method == 'POST':
+        userDetails = request.form
+        acctid=None
+        custid=None
+        acctid=userDetails['actid']
+        custid=str(userDetails['cstid'])
+        print(acctid)
+        print(custid)
+        cur = mysql.connection.cursor()
+        resultValue=cur.execute("select * from Account where ws_acct_id=%s OR ws_cust_id like %s",[acctid,custid])
+        global account
+        if resultValue>0:
+            account=cur.fetchone()
+            #return render_template('08 Account Status.html',userdet=dets)    
+            if check==1:
+                #return render_template('07 Delete Account.html',userdet=dets)
+                return redirect('/deleteacctpage')
+            elif check==2:
+                return render_template('11 Deposit Amount.html',userdet=dets)
+            elif check==3:
+                return render_template('12 Withdraw Amount.html',userdet=dets)
+        else:
+            return "Customer Doesnt Exist"
+        #return render_template('08 Account Status.html',userdet=dets)    
+    return render_template('10 Account Search.html')
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

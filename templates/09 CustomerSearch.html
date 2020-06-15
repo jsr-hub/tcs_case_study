@@ -1,9 +1,10 @@
+
 <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
 <head>
-	<title>Delete Account Page</title>
+	<title>Customer Search Page</title>
    <!--Made with love by Mutiullah Samim -->
    
 	<!--Bootsrap 4 CDN-->
@@ -17,25 +18,32 @@
 
 
 <html>
-	<div class="container"><div class="d-flex justify-content-center h-60" style="position:fixed;top:80px;left: 400px;width: 600px;">
+	<div class="container"><div class="d-flex justify-content-center h-60" style="position:fixed;top:50px;left: 450px;width: 550px;">
 		<div class="card">
 			<div class="card-header">
-				<h3>Delete Account</h3>
-				</div>
+				<!--
+				<h3>Update Customer</h3>
+				--></div>
 			<div class="card-body">
-				<form method="post">
+				<form>
 					<div class="input-group form-group">
-						<label style="position:relative;">Account ID :  </label>
-						<select list="acttypes" name="selectact" style="position:relative;left:10px;"class="form-control" required placeholder="Account ID">
-						 	<option id="">{{actid[1]}}</option>
-						</select>
+						<div class="input-group-prepend">
+							
+							
+						</div>
+						<label style="position:relative;left:10px;">Enter Customer SSN Id :  </label>
+						<input type="text" style="position:relative;left:10px;"class="form-control">
 					</div>
+					<label style="position:relative;left:100px;">OR </label>
 					<div class="input-group form-group">
-						<label style="position:relative;">Account Type :  </label>
-						<input type="text" style="position:relative;left:10px;"class="form-control" name="confirmtype" required placeholder="Confirm Account Type">
+						<div class="input-group-prepend">
+						
+						</div>
+						<label style="position:relative;left:10px;">Enter Customer Id :  </label>
+						<input type="text" style="position:relative;left:10px;"class="form-control">
 					</div>
-						<div class="form-group">
-						<button type="submit" class="btn float-right  login_btn">Delete Account</button>
+					<div class="form-group">
+						<button type="submit"  style="position:relative;left:200px;" class="btn float-left  login_btn">View</button>
 					</div>
 				</form>
 			</div>
