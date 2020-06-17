@@ -23,37 +23,32 @@
 				<h3>Transfer Amount</h3>
 				</div>
 			<div class="card-body">
-				<form>
+				<form method="post">
 					<div class="input-group form-group">
 						<label style="position:relative;">Customer ID :  </label>
-						<input type="text" style="position:relative;left:10px;"class="form-control" required placeholder="120003001" readonly="readonly">
+						<input type="text" style="position:relative;left:10px;"class="form-control" name="acctid" value="{{custid[1]}}" required placeholder="" readonly="readonly">
 						
 					</div>
 					<div class="input-group form-group">
-						<label style="position:relative;">Customer Name :  </label>
-						<input type="password" style="position:relative;left:10px;"class="form-control" required>
+						<label style="position:relative;">Customer Name :  </label><input type="text" style="position:relative;left:10px;"class="form-control" name="actname" value="{{custid[2]}}" required   placeholder="" readonly="readonly">
 					</div>
 					<div class="input-group form-group">
 						<label style="position:relative;">Source Account Type :  </label>
-						<select list="acttypes" style="position:relative;left:10px;"class="form-control" required placeholder="Account Type">
+						<select list="acttypes" style="position:relative;left:10px;"class="form-control" required name="srcact" placeholder="Account Type">
 						 	<option id="savact">Savings Account</option>
-						  	<option id="chkact">Checking Account</option>
-						   	<option id="mrkact">Market Account</option>
-						    <option id="crtdpt">Certificate of Deposit</option>
+						  	<option id="chkact">Current Account</option>
 						</select>
 					</div>
 					<div class="input-group form-group">
 						<label style="position:relative;">Target Account Type :  </label>
-						<select list="acttypes" style="position:relative;left:10px;"class="form-control" required placeholder="Account Type">
+						<select list="acttypes"name="dstact" style="position:relative;left:10px;"class="form-control" required placeholder="Account Type">
 						 	<option id="savact">Savings Account</option>
-						  	<option id="chkact">Checking Account</option>
-						   	<option id="mrkact">Market Account</option>
-						    <option id="crtdpt">Certificate of Deposit</option>
+						  	<option id="chkact">Current Account</option>
 						</select>
 					</div>
 					<div class="input-group form-group">
 						<label style="position:relative;">Amount :  </label>
-						<input type="number" style="position:relative;left:10px;"class="form-control" required>
+						<input type="number" name="amt" style="position:relative;left:10px;"class="form-control" required>
 					</div>
 					
 					<div class="form-group">

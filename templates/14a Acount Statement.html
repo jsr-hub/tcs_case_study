@@ -23,21 +23,21 @@
 				<h3>Account Statement</h3>
 				</div>
 			<div class="card-body">
-				<form>
+				<form method="POST">
 					<div class="input-group form-group">
 						<label style="position:relative;">Account Id :  </label>
-						<input type="text" style="position:relative;left:10px;"class="form-control" required >
+						<input type="text" name="acctid" style="position:relative;left:10px;"class="form-control" required >
 						
 					</div>
 <hr>		
 <div class="form-check">
-  <input class="form-check-input-right" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked>
+  <input class="form-check-input-right" type="radio" name="exampleRadios" id="trxn" value="no" checked>
   <label class="form-check-label" for="exampleRadios1">
     Last Number of Transactions
   </label>
 </div>
 <div class="form-check">
-  <input class="form-check-input-riht" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
+  <input class="form-check-input-riht" type="radio" name="exampleRadios" id="trxn" value="date">
   <label class="form-check-label" for="exampleRadios2">
     Start End Dates
   </label>
@@ -45,12 +45,41 @@
 <hr>
 					<div class="input-group form-group">
 						<label style="position:relative;">Number of Transactions :  </label>
-						<input type="number" style="position:relative;left:10px;"class="form-control" required placeholder="Number Input">
+						<input type="number" name="no"style="position:relative;left:10px;"class="form-control" required placeholder="Number Input">
 					</div>
 						<div class="form-group">
 						<button type="submit" class="btn float-right  login_btn">Submit</button>
 					</div>
 				</form>
+				<div class="card-body">
+				<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">ws_trans_id</th>
+      <th scope="col">description</th>
+      <th scope="col">Date(YYYY-MM-DD)</th>
+      <th scope="col">Amount</th>
+      
+
+    </tr>
+
+    
+  </thead>
+  <tbody>
+    {% for user in userDetails %}
+    <tr>
+      <td> {{user[0]}} </td>
+      <td> {{user[2]}} </td>
+      <td> {{user[4]}} </td>
+      <td> {{user[3]}} </td>
+      
+      <td>Refreh</td>
+      
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+			</div>
 			</div>
 		</div>
 	</div></div>
