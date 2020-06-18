@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template, request, redirect, url_for
+
+
 from flask_mysqldb import MySQL
+
 import yaml
 
 app = Flask(__name__)
-
 # Configure db
 db = yaml.load(open('db.yaml'))
 app.config['MYSQL_HOST'] = db['mysql_host']
@@ -15,6 +17,7 @@ app.config['MYSQL_DB'] = db['mysql_db']
 
 mysql = MySQL(app)
 z=0
+res=None
 account=None
 aid=None
 cid=None
@@ -22,16 +25,25 @@ transamt=None
 account=None
 duser=None
 user=None
+hmsg=None
+hmsg2=""
+
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
     global z
     z=0
     return redirect('/')
+@app.route('/homepage', methods=['GET', 'POST'])
+def home():
+    global hmsg
+    global hmsg2
+    return render_template('home.html',HomeMessage=hmsg,HomeMessage2=hmsg2)
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         # Fetch form data
         global z
+        global hmsg
         userDetails = request.form
         print(userDetails)
         Login_id = userDetails['Login_id']
@@ -46,10 +58,12 @@ def index():
             if password in userDetails:
                 z+=1
                 print(z)
-                return ('SUCCUSS')
+                hmsg="Logged In Successfully"
+                return redirect('/homepage')
+                
                 
             else:
-                return ('ERROR')
+                return ('INCORRECT LOGIN')
         else:
             return ('session active')
        
@@ -74,9 +88,19 @@ def createcustomer():
             cur.execute("insert into customerstatus(ws_ssn_id,ws_cust_id,Status,Message) values (%s,%s,%s,%s)",(userDetails["ssn_id"],cust_id,"Active","customer created succussfully"))
             mysql.connection.commit()
             cur.close()
-            return('succuss')
-        else:
-            return('error')
+            global hmsg
+            global hmsg2
+            hmsg="Customer Created Successfully"
+            hmsg2=""
+            return redirect('/homepage')
+        elif (len(userDetails["ssn_id"])!=9):
+            hmsg="Customer Creation Failed."
+            hmsg2="SSN Id length should be 9 digits"
+            return redirect('/homepage')
+        elif (z!=0):
+            hmsg="Customer Creation Failed."
+            hmsg2="SSN Id already taken"
+            return redirect('/homepage')
         
     return render_template('02 Create Customer.html')
 @app.route('/customersearch/<int:check>', methods=['GET', 'POST'])
@@ -85,8 +109,11 @@ def customersearchupdate(check):
         # Fetch form data
         global user
         global duser 
+        global hmsg
+        global hmsg2
         userDetails = dict(request.form)
         print(userDetails)
+        print(userDetails['ssnid'])
         ssnid=userDetails['ssnid']
         custid=userDetails['custid']
         cur = mysql.connection.cursor()
@@ -106,14 +133,18 @@ def customersearchupdate(check):
        
         if check==1:
             if(z==0):
-                return('NO CUSTOMER')
+                hmsg="Customer Updation Failed."
+                hmsg2="NO CUSTOMER. "
+                return redirect('/homepage')
             else:
                 user =cur.fetchone()
                 print(user)
                 return redirect('/updatecustomer')
         if check==2:
             if(z==0):
-                return('NO CUSTOMER')
+                hmsg="Customer Updation Failed."
+                hmsg2="NO CUSTOMER. "
+                return redirect('/homepage')
             else:
                 duser =cur.fetchone()
                 return redirect('/deletecustomer')
@@ -136,7 +167,11 @@ def updatecustomer():
         cur.execute("UPDATE customerstatus set Status=%s,Message=%s,Last_Updates=CURRENT_TIMESTAMP where ws_cust_id =%s",("Active","customer update complete",user[1],))
         mysql.connection.commit()
         cur.close()
-        return('succuss')
+        global hmsg
+        global hmsg2
+        hmsg="Customer Updation Successful. "
+        hmsg2=""
+        return redirect('/homepage')
     return render_template('03 UpdateCustomer.html',ssnid=user[0],custid=user[1],name=user[2],adr=user[3],age=user[4])
 
 @app.route('/deletecustomer', methods=['GET', 'POST'])
@@ -155,7 +190,11 @@ def deletecustomer():
         cur.execute("UPDATE customerstatus set Status=%s,Message=%s,Last_Updates=CURRENT_TIMESTAMP where ws_cust_id =%s",("Active","customer deleted successfully",duser[1]))
         mysql.connection.commit()
         cur.close()
-        return('succuss')
+        global hmsg
+        global hmsg2
+        hmsg="Customer Deletion Successful. "
+        hmsg2=""
+        return redirect('/homepage')
     return render_template('04 Delete Customer.html',ssnid=duser[0],name=duser[2],adr=duser[3],age=duser[4])
 
 @app.route('/customerstatus')
@@ -176,6 +215,8 @@ def accountstatus():
 
 @app.route('/createacct',methods = ['POST', 'GET'])
 def createacctpage():
+    global hmsg
+    global hmsg2
     if request.method == 'POST':
         userDetails = dict(request.form)
         print(userDetails)
@@ -197,7 +238,9 @@ def createacctpage():
                 cur.execute("insert into Account (ws_cust_id,ws_acct_type,ws_acct_balance) values(%s,%s,%s)",(Customer_id,AccountType,DepAmount))
                 mysql.connection.commit()
             else:
-                return ("Account Exist")
+                hmsg="Account Creation Failed."
+                hmsg2="Account Already Exists "
+                return redirect('/homepage')
             dataval=cur.execute("select * from Account where ws_cust_id=%s",[Customer_id])
             if dataval>0:
                 print("MOER THAN WON")
@@ -208,15 +251,19 @@ def createacctpage():
                 cur.execute("insert into AccountStatus (ws_cust_id,ws_acct_id,ws_acct_type,Status,Message) values(%s,%s,%s,%s,%s)",(Customer_id,singledet[1],AccountType,"Active",Message))
                 mysql.connection.commit()
             cur.close()
-            return "SUCCESS:"
+            hmsg="Account Creation Successful"
+            hmsg2=""
+            return redirect('/homepage')
         else:
-            return "no customer"
+            hmsg="Account Creation Failed."
+            hmsg2="No Customer with given Credentials"
+            return redirect('/homepage')
         
     #return redirect(url_for('create_table'))"""
     return render_template('06 Create Account.html')
     
 
-@app.route('/deleteacctpage',methods = ['POST', 'GET'])
+@app.route('/deleteaccount',methods = ['POST', 'GET'])
 def deleteacctpage():
     if request.method == 'POST':
         userDetails = request.form
@@ -226,6 +273,8 @@ def deleteacctpage():
             selecttype='c'
         elif(selecttype=='Saving'):
             selecttype='s'
+        global hmsg
+        global hmsg2
         global account
         cur = mysql.connection.cursor()
         resultValue=cur.execute("select * from Account where ws_acct_id=%s",[selectedact])
@@ -238,11 +287,15 @@ def deleteacctpage():
                 mysql.connection.commit()
                 cur.execute("update AccountStatus set Status=%s,Message=%s where ws_acct_id=%s and ws_acct_type=%s",[newstatus,Message,selectedact,selecttype])
                 mysql.connection.commit()
-                return "Deleted:"
+                hmsg="Account Deletion Successful"
+                hmsg2=""
+            return redirect('/homepage')
         else:
-            return "No such Account"
+            hmsg="Account Deletion Failed."
+            hmsg2="No such Account"
+            return redirect('/homepage')
         cur.close()
-    print("HELLOWORLD")
+    
     global account
     return render_template('07 Delete Account.html',actid=account)
 
@@ -259,6 +312,8 @@ def searchacc(check):
         acctid=userDetails['actid']
         custid=str(userDetails['cstid'])
         global cid
+        global hmsg
+        global hmsg2
         cid=custid
         global aid
         aid=acctid
@@ -287,7 +342,9 @@ def searchacc(check):
             elif check==4:
                 return redirect(url_for('confirmtrn'))
         else:
-            return "Customer Doesnt Exist"
+            hmsg="Customer Search Failed."
+            hmsg2="No Customer with given Credentials"
+            return redirect('/homepage')
         #return render_template('08 Account Status.html',userdet=dets)    
     return render_template('10 Account Search.html')
 
@@ -306,6 +363,8 @@ def confirmdep():
     global cid
     global aid
     global account
+    global hmsg
+    global hmsg2
     if request.method == 'POST':
         userDetails = request.form
         acctid=int(userDetails['acct'])
@@ -326,7 +385,9 @@ def confirmdep():
         aid=None
         transamt=None
         account=None
-        return "Deposited Successfully"
+        hmsg="Money Deposition Successful."
+        hmsg2=""
+        return redirect('/homepage')
     return render_template('11 Deposit Amount.html',actid=account)
                 
 @app.route('/withdrawmoney')
@@ -346,7 +407,9 @@ def confirmwit():
         cur = mysql.connection.cursor()
         z=cur.execute("select * from Account where ws_acct_id=%s and ws_acct_balance - %s >-1 ",[acctid,updamt])
         if z==0:
-            return("insufficient balance")
+            hmsg="Money Withdrawal Failed."
+            hmsg2="Insufficient Balance"
+            return redirect('/homepage')
         cur.execute("update Account set ws_acct_balance = ws_acct_balance - %s where ws_acct_id=%s",[updamt,acctid])
         mysql.connection.commit()
         stringval="Withdrawn "+updamt+" from Account"
@@ -362,7 +425,9 @@ def confirmwit():
         aid=None
         transamt=None
         account=None
-        return "Withdrawn Successfully"
+        hmsg="Money Withdrawal Successful."
+        hmsg2=""
+        return redirect('/homepage')
     return render_template('12 Withdraw Amount.html',actid=account)
 
 @app.route('/transfermoney')
@@ -408,12 +473,18 @@ def confirmtrn():
         aid=None
         transamt=None
         customer=None
-        return "Transferred Successfully"
+        global hmsg
+        global hmsg2
+        hmsg="Money transfer Successful."
+        hmsg2=""
+        return redirect('/homepage')
     return render_template('13 Transfer Money.html',custid=customer)
 
 @app.route('/accountstatementA',methods=["GET","POST"])
 def accountstatementA():
-    global aid
+    global res
+    global hmsg
+    global hmsg2
     if request.method == 'POST':
         userDetails = dict(request.form)
         print(userDetails)
@@ -428,8 +499,9 @@ def accountstatementA():
                 
                 return render_template('14a Acount Statement.html',userDetails=res)
             else:
-                return("NO TRANSACTIONS YET")
-            
+                hmsg="No Transactions yet for the given account."
+                hmsg2=""
+                return redirect('/homepage')
         else:
             return redirect('/accountstatementB')
         cur.close()
@@ -437,7 +509,9 @@ def accountstatementA():
 
 @app.route('/accountstatementB',methods=["GET","POST"])
 def accountstatementB():
-    global aid
+    global res
+    global hmsg
+    global hmsg2
     if request.method == 'POST':
         userDetails =dict(request.form)
         print(userDetails)
@@ -453,18 +527,46 @@ def accountstatementB():
         end='-'.join(end)+" 23:59:59"
         print(start,end)
         z=cur.execute(" select * from transactions where ws_acct_id=%s and ws_rxn_date BETWEEN %s  and %s ORDER BY ws_rxn_date desc",(aid,start,end))
-        print(z)
-        res=cur.fetchall()
-        
-        return render_template('14b AccountStatement.html',userDetails=res)
-    
+        if z>0:
+            res=cur.fetchall()
+            
+            return render_template('14a Acount Statement.html',userDetails=res)
+        else:
+                hmsg="No Transactions yet for the given account."
+                hmsg2=""
+                return redirect('/homepage')
             
        
         cur.close()
         
             
     return render_template('14b AccountStatement.html')
+class Pdf():
 
+    def render_pdf(self, name, html):
+
+        from xhtml2pdf import pisa
+        from io import StringIO
+        pdf = StringIO()
+       
+
+        pisa.CreatePDF(StringIO(html), pdf)
+
+        return pdf.getvalue()
+@app.route('/pdf',methods=["GET","POST"])
+def downloadpdf():
+    global res
+    html = render_template(
+        '15 transaction.html',userDetails=res)
+    file_class = Pdf()
+    pdf = file_class.render_pdf([res], html)
+    headers = {
+        'content-type': 'application.pdf',
+        'content-disposition': 'attachment; filename=trxn.pdf'}
+    return pdf, 200, headers
+@app.route('/excel',methods=["GET","POST"])
+def downloadexcel():
+    return("excel")
 
 if __name__ == '__main__':
     app.run(debug=True)
