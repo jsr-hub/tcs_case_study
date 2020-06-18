@@ -55,7 +55,7 @@
 				<table class="table">
   <thead class="thead-dark">
     <tr>
-      <th scope="col">ws_trans_id</th>
+      <th scope="col">transaction_id</th>
       <th scope="col">description</th>
       <th scope="col">Date(YYYY-MM-DD)</th>
       <th scope="col">Amount</th>
@@ -68,12 +68,22 @@
   <tbody>
     {% for user in userDetails %}
     <tr>
-      <td> {{user[0]}} </td>
-      <td> {{user[2]}} </td>
-      <td> {{user[4]}} </td>
+      <td>{{user[0]}}</td>
+     
+		{% if user[2] =='t' %}
+		<td>Transfer</td>
+		 {% elif user[2] =='w' %}
+		 <td>Withdraw</td>
+		{% else %}
+		<td>Deposit</td>
+	{% endif %}
+		  
+	
+	 
+      <td> {{user[4].date()}} </td>
       <td> {{user[3]}} </td>
       
-      <td>Refreh</td>
+     
       
     </tr>
     {% endfor %}

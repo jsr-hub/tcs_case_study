@@ -420,13 +420,12 @@ def accountstatementA():
         aid=userDetails["acctid"]
         if(userDetails["exampleRadios"]=="no"):
             cur = mysql.connection.cursor()
-            z=cur.execute("select * from account where ws_acct_id =%s",[aid])
-            if z==0:
-                return("NO SUCH ACCOUNT EXIST");
+           
             n=int(userDetails["no"])
             z=cur.execute("select * from transactions where ws_acct_id=%s ORDER BY ws_rxn_date desc LIMIT %s",(aid,n))
             if z>0:
                 res=cur.fetchall()
+                
                 return render_template('14a Acount Statement.html',userDetails=res)
             else:
                 return("NO TRANSACTIONS YET")
@@ -440,11 +439,31 @@ def accountstatementA():
 def accountstatementB():
     global aid
     if request.method == 'POST':
-        userDetails = dict(request.form)
+        userDetails =dict(request.form)
         print(userDetails)
+        aid=userDetails['acctid']
+        
+        cur = mysql.connection.cursor()
+        start=userDetails['start'].split('/')
+        start.reverse()
+        start='-'.join(start)+" 00:00:00"
+
+        end=userDetails['end'].split('/')
+        end.reverse() 
+        end='-'.join(end)+" 23:59:59"
+        print(start,end)
+        z=cur.execute(" select * from transactions where ws_acct_id=%s and ws_rxn_date BETWEEN %s  and %s ORDER BY ws_rxn_date desc",(aid,start,end))
+        print(z)
+        res=cur.fetchall()
+        
+        return render_template('14b AccountStatement.html',userDetails=res)
+    
+            
+       
+        cur.close()
         
             
-    return render_template('14a Acount Statement.html')
+    return render_template('14b AccountStatement.html')
 
 
 if __name__ == '__main__':
